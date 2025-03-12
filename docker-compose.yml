@@ -1,0 +1,49 @@
+services:
+  web_crawler:
+    build: ./crawler
+    ports:
+      - "5001:5000"
+    depends_on:
+      - mongo_db
+      - redis_db
+    networks:
+      - nambuinetwork
+  mongo_db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - nambuinetwork
+    
+  redis_db:
+    image: redis:latest
+    container_name: redis_db
+    ports:
+      - "6379:6379"
+    networks:
+      - nambuinetwork
+  api_service:
+    build: ./crawler_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo_db
+      - redis_db
+    environment:
+      - REDIS_HOST=redis_db
+      - MONGO_URI=mongodb://mongo_db:27017/
+    networks:
+      - nambuinetwork
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api_service
+    networks:
+      - nambuinetwork
+
+networks:
+  nambuinetwork:
+    driver: bridge
